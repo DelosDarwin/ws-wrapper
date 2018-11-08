@@ -1,46 +1,81 @@
 const WebSocket = require('ws');
 
 class WebSocketWrapper {
-    constructor({ url, reconnectDelay }) {
-        this.reconnectDelay = reconnectDelay || 1000;
-        this.init(url);
+    constructor(url, options = {}) {
+        this.url = url;
+        this.isReconnect = true;
+        this.reconnectDelay = options.reconnectDelay || 2000;
+        this.handlers = {};
+
+        this.init();
     }
 
-    init(url) {
+    init() {
         if (this.ws) {
-            const prevEventHandlers = { ...this.ws._events };
+            console.log(`Reconnecting to ${this.url}`);
+            this.handlers = {};
+            this.ws.terminate();
+        }
 
-            this.ws = new WebSocket(url);
-            this.ws._events = { ...prevEventHandlers };
-        } else {
-            this.ws = new WebSocket(url);
-            this.url = url;
+        this.ws = new WebSocket(this.url);
 
-            this.ws.on('close', () => {
-                this.onclose();
-            });
+        this.ws.on('close', () => {
+            if (this.handlers.close) this.handlers.close();
+            if (this.isReconnect) this.reconnect();
+        });
 
-            this.ws.on('open', () => {
-                console.log('Connection is open');
-                
-                if (this.interval) clearInterval(this.interval);
-            });
+        this.ws.on('open', () => {
+            if (this.handlers.open) this.handlers.open();
+            
+        });
 
-            this.ws.on('error', () => {
-                this.onclose();
-            });
+        this.ws.on('message', (m) => {
+            if (this.handlers.message) this.handlers.message(m);
+            
+        });
+
+        this.ws.on('error', (e) => {
+            if (this.handlers.error) this.handlers.error(e);
+        });
+    }
+
+    on(event, handler) {
+        this.handlers[event] = handler;
+    }
+
+    reconnect() {
+        setTimeout(() => {
+            this.init();
+        }, this.reconnectDelay);
+    }
+
+    send() {
+        try {
+            this.ws.send(...arguments);
+        } catch (e) {
+            console.log(e);
         }
     }
 
-    onclose() {
-        if (this.interval) clearInterval(this.interval);
+    close() {
+        this.ws.close(...arguments);
+    }
 
-        this.interval = setInterval(() => {
-            console.log('Trying to reconnect to ', this.url);
+    ping() {
+        this.ws.ping(...arguments);
+    }
 
-            this.init(this.url);
-        }, this.reconnectDelay); 
+    pong() {
+        this.ws.pong(...arguments);
+    }
+
+    terminate() {
+        this.ws.terminate(...arguments);
     }
 };
+
+WebSocketWrapper.Server = WebSocket.Server;
+WebSocketWrapper.Receiver = WebSocket.Receiver;
+WebSocketWrapper.Sender = WebSocket.Sender;
 
 module.exports = WebSocketWrapper;
