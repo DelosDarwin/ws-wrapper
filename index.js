@@ -72,6 +72,10 @@ class WebSocketWrapper {
     terminate() {
         this.ws.terminate(...arguments);
     }
+
+    removeListener() {
+        this.ws.removeListener(...arguments);
+    }
 };
 
 WebSocketWrapper.Server = WebSocket.Server;
