@@ -13,7 +13,6 @@ class WebSocketWrapper {
     init() {
         if (this.ws) {
             console.log(`Reconnecting to ${this.url}`);
-            this.handlers = {};
             this.ws.terminate();
         }
 
