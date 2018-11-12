@@ -5,7 +5,12 @@ class WebSocketWrapper {
         this.url = url;
         this.isReconnect = true;
         this.reconnectDelay = options.reconnectDelay || 2000;
-        this.handlers = {};
+        this.handlers = {
+            open: [],
+            message: [],
+            error: [],
+            close: []
+        };
 
         this.init();
     }
@@ -19,27 +24,17 @@ class WebSocketWrapper {
         this.ws = new WebSocket(this.url);
 
         this.ws.on('close', () => {
-            if (this.handlers.close) this.handlers.close();
+            this._executeHandlers('close');
             if (this.isReconnect) this.reconnect();
         });
 
-        this.ws.on('open', () => {
-            if (this.handlers.open) this.handlers.open();
-            
-        });
-
-        this.ws.on('message', (m) => {
-            if (this.handlers.message) this.handlers.message(m);
-            
-        });
-
-        this.ws.on('error', (e) => {
-            if (this.handlers.error) this.handlers.error(e);
-        });
+        this.ws.on('open', () => this._executeHandlers('open'));
+        this.ws.on('message', m => this._executeHandlers('message', m));
+        this.ws.on('error', e => this._executeHandlers('error', e));
     }
 
     on(event, handler) {
-        this.handlers[event] = handler;
+        this.handlers[event].push(handler);
     }
 
     reconnect() {
@@ -74,6 +69,10 @@ class WebSocketWrapper {
 
     removeListener() {
         this.ws.removeListener(...arguments);
+    }
+
+    _executeHandlers(event, eventResp) {
+        this.handlers[event].forEach(handler => handler(eventResp));
     }
 };
 
