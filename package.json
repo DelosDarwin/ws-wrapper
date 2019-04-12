@@ -1,0 +1,18 @@
+{
+  "name": "ws-wrapper",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.webbylab.com:delos/ws.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ws": "^6.1.0"
+  }
+}
