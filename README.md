@@ -1,4 +1,4 @@
-# ws
+# ws-wrapper
 
 Wrapper around "ws" npm package with implementation of websocket reconnection when connection's readyState changes to CLOSED ('close' event is fired).
 

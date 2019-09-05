@@ -28,13 +28,19 @@ class WebSocketWrapper {
             if (this.isReconnect) this.reconnect();
         });
 
-        this.ws.on('open', () => this._executeHandlers('open'));
+        this.ws.on('open',   () => this._executeHandlers('open'));
         this.ws.on('message', m => this._executeHandlers('message', m));
-        this.ws.on('error', e => this._executeHandlers('error', e));
+        this.ws.on('error',   e => this._executeHandlers('error', e));
     }
 
     on(event, handler) {
         this.handlers[event].push(handler);
+    }
+
+    removeListener(event, handler) {
+        const indexOfHandlerToRemove = this.handlers[event].indexOf(handler);
+
+        this.handlers[event].splice(indexOfHandlerToRemove, 1);
     }
 
     reconnect() {
@@ -67,17 +73,13 @@ class WebSocketWrapper {
         this.ws.terminate(...arguments);
     }
 
-    removeListener() {
-        this.ws.removeListener(...arguments);
-    }
-
     _executeHandlers(event, eventResp) {
         this.handlers[event].forEach(handler => handler(eventResp));
     }
 };
 
-WebSocketWrapper.Server = WebSocket.Server;
+WebSocketWrapper.Server   = WebSocket.Server;
 WebSocketWrapper.Receiver = WebSocket.Receiver;
-WebSocketWrapper.Sender = WebSocket.Sender;
+WebSocketWrapper.Sender   = WebSocket.Sender;
 
 module.exports = WebSocketWrapper;
