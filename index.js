@@ -12,6 +12,8 @@ class WebSocketWrapper {
             close: []
         };
 
+        this._options = options;
+
         this.init();
     }
 
@@ -21,7 +23,7 @@ class WebSocketWrapper {
             this.ws.terminate();
         }
 
-        this.ws = new WebSocket(this.url);
+        this.ws = new WebSocket(this.url, this._options);
 
         this.ws.on('close', () => {
             this._executeHandlers('close');
